@@ -7,6 +7,9 @@ class Category(models.Model):
     description = models.CharField(max_length=500, blank=True)
     top_product = models.ForeignKey('Product', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
 
+    def __str__(self):
+        return self.title
+
 class Discount(models.Model):
     discount = models.FloatField()
     description = models.CharField(max_length=255)
@@ -31,6 +34,9 @@ class Product(models.Model):
 
     create_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
 
 class Color(models.Model):
     name = models.CharField(max_length=50)
