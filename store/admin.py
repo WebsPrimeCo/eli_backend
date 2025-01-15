@@ -27,3 +27,7 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(models.Size)
 class SizeAdmin(admin.ModelAdmin):
     list_display = ['size', ]
+
+@admin.register(models.Color)
+class ColorAdmin(admin.ModelAdmin):
+    list_display = []
