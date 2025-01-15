@@ -24,7 +24,7 @@ class Product(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(allow_unicode=True, unique=True)
     available_colors = models.ManyToManyField('Color', blank=True)
-    available_size = models.ManyToManyField('Size', blank=True, on_delete = models.SET_NULL)
+    available_size = models.ManyToManyField('Size', blank=True)
     inventory = models.PositiveIntegerField()
     descriptions = models.TextField()
     price = models.PositiveSmallIntegerField()
