@@ -1,18 +1,8 @@
 import factory
 import factory.fuzzy
 from faker import Faker
-
-from .models import (
-    Category,
-    Discount,
-    Product,
-    Customer,
-    Address,
-    Order,
-    OrderItem,
-    Comment,
-    Cart,
-    CartItem
+from store.models import (
+    Category, Discount, Product, Color, Size, Comment, Customer, Order, OrderItem
 )
 
 fake = Faker()
@@ -24,13 +14,9 @@ class CategoryFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Category
 
-    title = factory.Faker('sentence', nb_words=2)   # یک جمله کوتاه مثلاً "Electronic Devices"
-    description = factory.Faker('text', max_nb_chars=100)  # متن کوتاه برای توضیحات
+    title = factory.Faker('sentence', nb_words=2)  # مثل "Electronics"
+    description = factory.Faker('text', max_nb_chars=100)
     top_product = None
-    # توجه: اگر بخواهید در top_product یک محصول خاص قرار دهید (که مرتبط با همان Category باشد)،
-    # باید با احتیاط عمل کنید تا دچار حلقه (Circular Dependency) نشویم.
-    # فعلاً آن را None می‌گذاریم. می‌توانید بعداً به صورت دستی یا با ترفندهای تستی مقداردهی کنید.
-
 
 # -----------------------------------------------------------------------------
 # 2. Discount Factory
@@ -39,41 +25,82 @@ class DiscountFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Discount
 
-    discount = factory.fuzzy.FuzzyDecimal(0, 50, precision=1)  # مثلاً عددی بین 0 تا 50 درصد تخفیف
+    discount = factory.fuzzy.FuzzyDecimal(0, 50, precision=1)
     description = factory.Faker('sentence', nb_words=4)
 
+# -----------------------------------------------------------------------------
+# 3. Color Factory
+# -----------------------------------------------------------------------------
+class ColorFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Color
+
+    name = factory.Faker('color_name')  # مثل "Red"
+    code = factory.Faker('hex_color')  # مثل "#FF0000"
 
 # -----------------------------------------------------------------------------
-# 3. Product Factory
+# 4. Size Factory
+# -----------------------------------------------------------------------------
+class SizeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Size
+
+    size = factory.fuzzy.FuzzyChoice(['S', 'M', 'L', 'XL', 'XXL'])
+
+# -----------------------------------------------------------------------------
+# 5. Product Factory
 # -----------------------------------------------------------------------------
 class ProductFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Product
 
-    name = factory.Faker('word')  # نام کالا مثلاً "Laptop"
     category = factory.SubFactory(CategoryFactory)
+    image_1 = factory.django.ImageField(color='blue')
+    image_2 = factory.django.ImageField(color='green')
+    image_3 = factory.django.ImageField(color='red')
+    title = factory.Faker('word')
     slug = factory.Faker('slug')
-    description = factory.Faker('paragraph', nb_sentences=2)
-    unit_price = factory.fuzzy.FuzzyDecimal(1, 999, precision=2)  # قیمت بین 1 تا 999
-    inventory = factory.fuzzy.FuzzyInteger(0, 1000)
+    inventory = factory.fuzzy.FuzzyInteger(1, 100)
+    descriptions = factory.Faker('paragraph', nb_sentences=3)
+    price = factory.fuzzy.FuzzyDecimal(10, 1000, precision=2)
+    create_at = factory.Faker('date_time_this_year')
+    modified_at = factory.Faker('date_time_this_year')
 
-    # در صورت تمایل می‌توانید تخفیف‌ها را نیز اضافه کنید:
     @factory.post_generation
-    def discounts(self, create, extracted, **kwargs):
-        """
-        اگر هنگام ساخت ProductFactory از پارامتر discounts استفاده کنیم،
-        می‌توانیم تخفیف‌های دلخواهمان را اضافه کنیم:
-        product = ProductFactory(discounts=[discount1, discount2, ...])
-        """
+    def available_colors(self, create, extracted, **kwargs):
         if not create:
             return
         if extracted:
-            for discount in extracted:
-                self.discounts.add(discount)
+            for color in extracted:
+                self.available_colors.add(color)
+        else:
+            self.available_colors.add(ColorFactory())
 
+    @factory.post_generation
+    def available_size(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for size in extracted:
+                self.available_size.add(size)
+        else:
+            self.available_size.add(SizeFactory())
 
 # -----------------------------------------------------------------------------
-# 4. Customer Factory
+# 6. Comment Factory
+# -----------------------------------------------------------------------------
+class CommentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Comment
+
+    user = factory.SubFactory('myapp.factories.UserFactory')  # جایگزین UserFactory با مدل کاربرتان
+    product = factory.SubFactory(ProductFactory)
+    rate = factory.fuzzy.FuzzyChoice([rate[0] for rate in Comment.RATE_CHOICE])
+    body = factory.Faker('paragraph', nb_sentences=2)
+    status = factory.fuzzy.FuzzyChoice([status[0] for status in Comment.COMMENT_STATUS])
+
+# -----------------------------------------------------------------------------
+# 7. Customer Factory
 # -----------------------------------------------------------------------------
 class CustomerFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -83,42 +110,24 @@ class CustomerFactory(factory.django.DjangoModelFactory):
     last_name = factory.Faker('last_name')
     email = factory.Faker('email')
     phone_number = factory.Faker('phone_number')
-    # با Faker('phone_number') ممکن است فرمت آمریکایی تولید شود؛ اگر فرمت ایرانی نیاز دارید،
-    # باید کاستوم بنویسید یا از "fa_IR" برای Locale استفاده کنید.
     birth_date = factory.Faker('date_of_birth')
-
-
-# -----------------------------------------------------------------------------
-# 5. Address Factory
-# -----------------------------------------------------------------------------
-class AddressFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Address
-
-    # به دلیل OneToOne با Customer، هر Address فقط به یک Customer منحصربه‌فرد تعلق می‌گیرد.
-    # در حالت پیش‌فرض زیر، هنگام ساخت Address، یک Customer جدید با SubFactory ساخته می‌شود.
-    customer = factory.SubFactory(CustomerFactory)
     province = factory.Faker('state')
     city = factory.Faker('city')
     street = factory.Faker('street_address')
 
-
 # -----------------------------------------------------------------------------
-# 6. Order Factory
+# 8. Order Factory
 # -----------------------------------------------------------------------------
 class OrderFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Order
 
     customer = factory.SubFactory(CustomerFactory)
-    # یکی از وضعیت‌های ممکن را به تصادف یا نوبتی انتخاب می‌کنیم
-    status = factory.Iterator([Order.ORDER_STATUS_PAID, 
-                               Order.ORDER_STATUS_UNPAID, 
-                               Order.ORDER_STATUS_CANCELED])
-
+    datetime_created = factory.Faker('date_time_this_year')
+    status = factory.fuzzy.FuzzyChoice([status[0] for status in Order.ORDER_STATUS])
 
 # -----------------------------------------------------------------------------
-# 7. OrderItem Factory
+# 9. OrderItem Factory
 # -----------------------------------------------------------------------------
 class OrderItemFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -127,43 +136,5 @@ class OrderItemFactory(factory.django.DjangoModelFactory):
     order = factory.SubFactory(OrderFactory)
     product = factory.SubFactory(ProductFactory)
     quantity = factory.fuzzy.FuzzyInteger(1, 10)
+    unit_price = factory.LazyAttribute(lambda o: o.product.price)
 
-    # به عنوان پیش‌فرض قیمت واحد را با توجه به قیمت کالا تعیین می‌کنیم.
-    unit_price = factory.LazyAttribute(lambda o: o.product.unit_price)
-
-
-# -----------------------------------------------------------------------------
-# 8. Comment Factory
-# -----------------------------------------------------------------------------
-class CommentFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Comment
-
-    product = factory.SubFactory(ProductFactory)
-    name = factory.Faker('name')
-    body = factory.Faker('paragraph', nb_sentences=2)
-    status = factory.Iterator([
-        Comment.COMMENT_STATUS_WAITING,
-        Comment.COMMENT_STATUS_APPROVED,
-        Comment.COMMENT_STATUS_NOT_APPROVED
-    ])
-
-
-# -----------------------------------------------------------------------------
-# 9. Cart Factory
-# -----------------------------------------------------------------------------
-class CartFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Cart
-
-
-# -----------------------------------------------------------------------------
-# 10. CartItem Factory
-# -----------------------------------------------------------------------------
-class CartItemFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = CartItem
-
-    cart = factory.SubFactory(CartFactory)
-    product = factory.SubFactory(ProductFactory)
-    quantity = factory.fuzzy.FuzzyInteger(1, 10)
