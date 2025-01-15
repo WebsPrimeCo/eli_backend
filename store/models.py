@@ -4,17 +4,27 @@ from django.contrib.auth import get_user_model
 
 class Category(models.Model):
     title = models.CharField(max_length=255)
-    descriptions = models.TextField()
-    top_product = models.ForeignKey('product', on_delete=models.PROTECT, blank=True, null=True)
+    description = models.CharField(max_length=500, blank=True)
+    top_product = models.ForeignKey('Product', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
+
+class Discount(models.Model):
+    discount = models.FloatField()
+    description = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f'{str(self.discount)} | {self.description}'
+
+
 
 class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    image_1 = models.ImageField(upload_to='media/', blank=True)
-    image_2 = models.ImageField(upload_to='media/', blank=True)
-    image_3 = models.ImageField(upload_to='media/')
+    image_1 = models.ImageField(upload_to='media/product_cover/', blank=True)
+    image_2 = models.ImageField(upload_to='media/product_cover/', blank=True)
+    image_3 = models.ImageField(upload_to='media/product_cover/')
     title = models.CharField(max_length=255)
     slug = models.SlugField(allow_unicode=True, unique=True)
     available_colors = models.ManyToManyField('Color', blank=True)
+    available_size = models.ManyToManyField('Size', blank=True, on_delete = models.SET_NULL)
     inventory = models.PositiveIntegerField()
     descriptions = models.TextField()
     price = models.PositiveSmallIntegerField()
@@ -25,6 +35,21 @@ class Product(models.Model):
 class Color(models.Model):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=7)
+
+class Size(models.Model):
+    size = models.CharField(max_length=10)
+
+
+class Customer(models.Model):
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=255)
+    birth_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
 
 class Comment(models.Model):
     RATE_RANK_FOR_PERFECT = 'p'
