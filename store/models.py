@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 class Category(models.Model):
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=500, blank=True)
-    top_product = models.ForeignKey('Product', on_delete=models.SET_NULL, blank=True, null=True, related_name='+')
+    top_product = models.ForeignKey('Product', on_delete=models.SET_NULL, blank=True, null=True, related_name='products')
 
     def __str__(self):
         return self.title
@@ -20,7 +20,7 @@ class Discount(models.Model):
 
 
 class Product(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='product')
     image_1 = models.ImageField(upload_to='media/product_cover/', blank=True)
     image_2 = models.ImageField(upload_to='media/product_cover/', blank=True)
     image_3 = models.ImageField(upload_to='media/product_cover/')
@@ -42,8 +42,14 @@ class Color(models.Model):
     name = models.CharField(max_length=50)
     code = models.CharField(max_length=7)
 
+    def __str__(self):
+        return f'{self.name} : {self.code}' 
+
 class Size(models.Model):
     size = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.size
 
 class Comment(models.Model):
     RATE_RANK_FOR_PERFECT = 'p'
