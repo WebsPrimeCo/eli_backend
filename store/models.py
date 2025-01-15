@@ -54,7 +54,7 @@ class Comment(models.Model):
         (COMMENT_STATUS_APPROVED, 'Approved'),
         (COMMENT_STATUS_NOT_APPROVED, 'Not Approved'),
     ]
-    
+
     RATE_CHOICE = [
         (RATE_RANK_FOR_PERFECT, _('Perfect')),
         (RATE_RANK_FOR_GOOD, _('Good')),
@@ -62,10 +62,11 @@ class Comment(models.Model):
         (RATE_RANK_FOR_NOT_BAD, _('Not Bad')),
         (RATE_RANK_FOR_BAD, _('Bad')),
     ]
-    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)    
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE) 
+    product = models.ForeignKey(Product, on_delete=models.CASCADE , related_name='comments')   
     rate = models.CharField(max_length=2, choices=RATE_CHOICE)
     body = models.TextField()
-    status = models.CharField(max_length=2, choices=)
+    status = models.CharField(max_length=2, choices=COMMENT_STATUS, default=COMMENT_STATUS_WAITING)
 
     create_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
