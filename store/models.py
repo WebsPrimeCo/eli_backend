@@ -39,25 +39,22 @@ class Color(models.Model):
 class Size(models.Model):
     size = models.CharField(max_length=10)
 
-
-class Customer(models.Model):
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=255)
-    birth_date = models.DateField(null=True, blank=True)
-
-    def __str__(self):
-        return f'{self.first_name} {self.last_name}'
-
-
 class Comment(models.Model):
     RATE_RANK_FOR_PERFECT = 'p'
     RATE_RANK_FOR_GOOD = 'g'
     RATE_RANK_FOR_NORMAL = 'n'
     RATE_RANK_FOR_NOT_BAD = 'nb'
     RATE_RANK_FOR_BAD = 'b'
+    COMMENT_STATUS_WAITING = 'w'
+    COMMENT_STATUS_APPROVED = 'a'
+    COMMENT_STATUS_NOT_APPROVED = 'na'
 
+    COMMENT_STATUS = [
+        (COMMENT_STATUS_WAITING, 'Waiting'),
+        (COMMENT_STATUS_APPROVED, 'Approved'),
+        (COMMENT_STATUS_NOT_APPROVED, 'Not Approved'),
+    ]
+    
     RATE_CHOICE = [
         (RATE_RANK_FOR_PERFECT, _('Perfect')),
         (RATE_RANK_FOR_GOOD, _('Good')),
@@ -68,10 +65,49 @@ class Comment(models.Model):
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)    
     rate = models.CharField(max_length=2, choices=RATE_CHOICE)
     body = models.TextField()
-    is_active = models.BooleanField(default=True)
+    status = models.CharField(max_length=2, choices=)
 
     create_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
+class Customer(models.Model):
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone_number = models.CharField(max_length=255)
+    birth_date = models.DateField(null=True, blank=True)
+
+    province = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    street = models.CharField(max_length=255)
+
+    create_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
+class Order(models.Model):
+    ORDER_STATUS_PAID = 'p'
+    ORDER_STATUS_UNPAID = 'u'
+    ORDER_STATUS_CANCELED = 'c'
+    ORDER_STATUS = [
+        (ORDER_STATUS_PAID,'Paid'),
+        (ORDER_STATUS_UNPAID,'Unpaid'),
+        (ORDER_STATUS_CANCELED,'Canceled'),
+    ]
+    
+    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='orders')
+    datetime_created = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=1, choices=ORDER_STATUS, default=ORDER_STATUS_UNPAID)
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name='order_items')
+    quantity = models.PositiveSmallIntegerField()
+    unit_price = models.DecimalField(max_digits=6, decimal_places=2)
+
+
 
 
 
