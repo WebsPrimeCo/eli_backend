@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.translation import gettext as _
 
 from . import models
 
@@ -10,7 +11,7 @@ class CategoryAdmin(admin.ModelAdmin):
     list_per_page= 10
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related('product')
+        return super().get_queryset(request).prefetch_related('top_product', 'products')
 
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -19,10 +20,14 @@ class ProductAdmin(admin.ModelAdmin):
      'title',
      'slug',
      'inventory',
-     'price'
+     'price',
      ]
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('category').prefetch_related('available_colors', 'available_size')
+    list_select_related = ['category']
+    actions = ['clear_inventory']
+
+    @admin.action(description= _('Out of supply'))
+    def clear_inventory(self, request, queryset):
+        queryset.update(inventory= 0)
 
 @admin.register(models.Size)
 class SizeAdmin(admin.ModelAdmin):
@@ -30,4 +35,9 @@ class SizeAdmin(admin.ModelAdmin):
 
 @admin.register(models.Color)
 class ColorAdmin(admin.ModelAdmin):
-    list_display = []
+    list_display = ['name', 'code']
+
+@admin.register(models.Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ['user', 'product', 'body', 'status', 'rate']
+ 

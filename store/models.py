@@ -20,7 +20,7 @@ class Discount(models.Model):
 
 
 class Product(models.Model):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='product')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
     image_1 = models.ImageField(upload_to='media/product_cover/', blank=True)
     image_2 = models.ImageField(upload_to='media/product_cover/', blank=True)
     image_3 = models.ImageField(upload_to='media/product_cover/')
