@@ -63,3 +63,18 @@ class CommentAdmin(admin.ModelAdmin):
 class CustomerAdmin(admin.ModelAdmin):
     list_display = ['first_name', 'last_name', 'phone_number', 'city']
     search_fields = ['first_name', 'last_name']
+
+
+class OrderItemTabular(admin.TabularInline):
+    model = models.OrderItem
+    fields = ['order', 'product', 'quantity', 'unit_price']
+    extra = 0
+
+@admin.register(models.Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['customer', 'status', 'datetime_created']
+    search_fields = ['first_name', 'last_name']
+    inlines = [
+        OrderItemTabular,
+    ]
+
