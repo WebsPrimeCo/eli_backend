@@ -21,9 +21,9 @@ class Discount(models.Model):
 
 class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
-    image_1 = models.ImageField(upload_to='media/product_cover/', blank=True)
-    image_2 = models.ImageField(upload_to='media/product_cover/', blank=True)
-    image_3 = models.ImageField(upload_to='media/product_cover/')
+    image_1 = models.ImageField(upload_to='media/product_cover/', blank=True, null=True)
+    image_2 = models.ImageField(upload_to='media/product_cover/', blank=True, null=True)
+    image_3 = models.ImageField(upload_to='media/product_cover/', blank=True, null=True)
     title = models.CharField(max_length=255)
     slug = models.SlugField(allow_unicode=True, unique=True)
     available_colors = models.ManyToManyField('Color', blank=True)
