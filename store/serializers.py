@@ -12,18 +12,19 @@ class DiscountSerializer(serializers.ModelSerializer):
     fields = ['discount', 'description']
 
 class ProductSerializer(serializers.ModelSerializer):
-    model = models.Product
-    fields = [
-        'category',
-        'image_1',
-        'image_2',
-        'image_3',
-        'title',
-        'slug',
-        'available_colors',
-        'available_size',
-        'inventory',
-        'descriptions',
-        'price',
-    ]
+    class Meta:
+        model = models.Product
+        fields = [
+            'category',
+            'image_1',
+            'image_2',
+            'image_3',
+            'title',
+            'slug',
+            'available_colors',
+            'available_size',
+            'inventory',
+            'descriptions',
+            'price',
+        ]
 
