@@ -1,11 +1,12 @@
 from rest_framework import serializers
+from django.utils.text import slugify
 
 from . import models
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Category
-        fields = ['title', 'description']
+        fields = ['id','title', 'description']
 
 class DiscountSerializer(serializers.ModelSerializer):
     model = models.Discount
@@ -20,11 +21,13 @@ class ProductSerializer(serializers.ModelSerializer):
             'image_2',
             'image_3',
             'title',
-            'slug',
-            'available_colors',
-            'available_size',
             'inventory',
             'descriptions',
             'price',
         ]
+    def create(self, validated_data):
+        product = models.Product(**validated_data)
+        product.slug = slugify(product.name)
+        product.save()
+        return product
 
