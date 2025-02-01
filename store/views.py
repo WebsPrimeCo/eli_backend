@@ -2,22 +2,16 @@ from django.shortcuts import get_object_or_404, render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.generics import ListCreateAPIView
 
 from . import models
 from . import serializers
 
 
-@api_view(['GET', 'POST'])
-def category_list(request):
-    if request.method == 'GET':
-        queryset = models.Category.objects.all()
-        serializer = serializers.CategorySerializer(queryset, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        serializer = serializers.CategorySerializer(data= request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+class CategoryList(ListCreateAPIView):
+    serializer_class = serializers.CategorySerializer
+    queryset = models.Category.objects.all()
+
 
 @api_view(['GET', 'PATCH','DELETE'])
 def category_detail(request, pk):
