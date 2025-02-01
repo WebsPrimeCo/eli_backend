@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.generics import ListCreateAPIView
 
 from . import models
@@ -13,21 +14,34 @@ class CategoryList(ListCreateAPIView):
     queryset = models.Category.objects.all()
 
 
-@api_view(['GET', 'PATCH','DELETE'])
-def category_detail(request, pk):
-    category = get_object_or_404(models.Category, pk=pk)
-
-    if request.method == 'GET':
+class CategoryDetail(APIView):
+    def get(self, request, pk):
+        category = get_object_or_404(models.Category, pk=pk)
         serializer = serializers.CategorySerializer(category)
         return Response(serializer.data)
-    elif request.method == 'PATCH':
+    def patch(self, request, pk):
+        category = get_object_or_404(models.Category, pk=pk)
         serializer = serializers.CategorySerializer(category ,data= request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save
         return Response(serializer.data, status=status.HTTP_200_OK)
-    elif request.method == 'DELETE':
+    def delete(self, request, pk):
+        category = get_object_or_404(models.Category, pk=pk)
         category.delete()
         return Response('Category were deleted' ,status=status.HTTP_202_ACCEPTED)
+
+# @api_view(['GET', 'PATCH','DELETE'])
+# def category_detail(request, pk):
+#     category = get_object_or_404(models.Category, pk=pk)
+
+#     if request.method == 'GET':
+#         serializer = serializers.CategorySerializer(category)
+#         return Response(serializer.data)
+#     elif request.method == 'PATCH':
+
+#     elif request.method == 'DELETE':
+#         category.delete()
+#         return Response('Category were deleted' ,status=status.HTTP_202_ACCEPTED)
         
 
 
