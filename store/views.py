@@ -30,10 +30,8 @@ def category_detail(request, pk):
         serializer = serializers.CategorySerializer(category ,data= request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == 'DELETE':
-        if category.product.count() > 0:
-            return Response({'error' : 'there are some product in this category'})
         category.delete()
         return Response('Category were deleted' ,status=status.HTTP_202_ACCEPTED)
         
@@ -50,4 +48,21 @@ def product_list(request):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+@api_view(['GET', 'PATCH', 'DELETE'])
+def product_detail(request, pk):
+    product = get_object_or_404(models.Product, pk=pk)
+
+    if request.method == 'GET':
+        serializer = serializers.ProductSerializer(product)
+        return Response(serializer.data)
+    elif request.method == 'PATCH':
+        serializer = serializers.ProductSerializer(data= request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == 'DELETE':
+        product.delete()
+        return Response(status=status.HTTP_200_OK)
+    
     
