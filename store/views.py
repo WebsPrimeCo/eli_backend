@@ -19,11 +19,24 @@ def category_list(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-@api_view()
+@api_view(['GET', 'PATCH','DELETE'])
 def category_detail(request, pk):
     category = get_object_or_404(models.Category, pk=pk)
-    serializer = serializers.CategorySerializer(category )
-    return Response(serializer.data)
+
+    if request.method == 'GET':
+        serializer = serializers.CategorySerializer(category)
+        return Response(serializer.data)
+    elif request.method == 'PATCH':
+        serializer = serializers.CategorySerializer(category ,data= request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save
+        return Response(serializer.data)
+    elif request.method == 'DELETE':
+        if category.product.count() > 0:
+            return Response({'error' : 'there are some product in this category'})
+        category.delete()
+        return Response('Category were deleted' ,status=status.HTTP_202_ACCEPTED)
+        
 
 
 @api_view(['GET', 'POST'])
