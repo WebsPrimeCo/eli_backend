@@ -8,9 +8,6 @@ class CategorySerializer(serializers.ModelSerializer):
         model = models.Category
         fields = ['id','title', 'description']
 
-class DiscountSerializer(serializers.ModelSerializer):
-    model = models.Discount
-    fields = ['discount', 'description']
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,4 +30,9 @@ class ProductSerializer(serializers.ModelSerializer):
         product.slug = slugify(product.name)
         product.save()
         return product
+    
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Comment
+        fields = ['id', 'product', 'body']
 

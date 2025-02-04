@@ -17,3 +17,4 @@ class ProductViewSet(ModelViewSet):
     serializer_class = serializers.ProductSerializer
     queryset = models.Product.objects.select_related('category').prefetch_related('available_colors', 'available_size').all()
     
+
