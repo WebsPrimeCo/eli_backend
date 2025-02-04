@@ -32,7 +32,14 @@ class ProductSerializer(serializers.ModelSerializer):
         return product
     
 class CommentSerializer(serializers.ModelSerializer):
+    user = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = models.Comment
-        fields = ['id', 'product', 'body']
+        fields = ['id', 'product', 'body', 'user']
+
+    def create(self, validated_data):
+        product_id = self.context['product_pk']
+        user = self.context['request'].user
+        return models.Comment.objects.create(user=user, **validated_data)
 
