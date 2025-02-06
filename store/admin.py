@@ -78,3 +78,16 @@ class OrderAdmin(admin.ModelAdmin):
         OrderItemTabular,
     ]
 
+
+class CartItemInline(admin.TabularInline):
+    model = models.CartItems
+    list_display = ['id','product', 'quantity']
+    extra = 0
+
+@admin.register(models.Cart)
+class CartAdmin(admin.ModelAdmin):
+    list_display = ['id', 'create_at']
+    inlines = [
+        CartItemInline,
+    ]
+

@@ -41,9 +41,6 @@ class CommentViewSet(ModelViewSet):
     
 class CartViewSet(mixins.CreateModelMixin,
                    mixins.RetrieveModelMixin,
-                   mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
-                   mixins.ListModelMixin,
                    GenericViewSet):
     serializer_class= serializers.CartSerializer
     queryset = models.Cart.objects.all()
