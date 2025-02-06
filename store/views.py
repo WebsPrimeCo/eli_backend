@@ -2,6 +2,8 @@ from django.shortcuts import get_object_or_404, render
 from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.viewsets import GenericViewSet
+from rest_framework import mixins
 
 
 from . import models
@@ -36,3 +38,12 @@ class CommentViewSet(ModelViewSet):
             'request':self.request,
             'product_pk': self.kwargs['product_pk'],
                 }
+    
+class CartViewSet(mixins.CreateModelMixin,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin,
+                   mixins.DestroyModelMixin,
+                   mixins.ListModelMixin,
+                   GenericViewSet):
+    serializer_class= serializers.CartSerializer
+    queryset = models.Cart.objects.all()

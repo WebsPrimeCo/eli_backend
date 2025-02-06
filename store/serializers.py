@@ -43,3 +43,8 @@ class CommentSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         return models.Comment.objects.create(user=user, **validated_data)
 
+
+class CartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Cart
+        fields = ['id', 'create_at']
