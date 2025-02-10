@@ -57,6 +57,27 @@ class CartItemSerializer(serializers.ModelSerializer):
 
     def get_item_total(self, cart_item):
         return cart_item.quantity * cart_item.product.price
+    
+class AddCartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.CartItems
+        fields = ['id', 'product', 'quantity']
+
+    def create(self, validated_data):
+        cart_id = self.context['cart_pk']
+        product = validated_data.get('product')
+        quantity = validated_data.get('quantity')
+
+        try:
+            cart_item= models.CartItems.objects.get(cart_id=cart_id, product_id = product.id)
+            cart_item.quantity += quantity
+            cart_item.save()
+        except models.CartItems.DoesNotExist:
+            cart_item = models.CartItems.objects.create(cart_id=cart_id, **validated_data)
+        
+        self.instance = cart_item
+        return cart_item
+
 
 
 class CartSerializer(serializers.ModelSerializer):
@@ -70,4 +91,4 @@ class CartSerializer(serializers.ModelSerializer):
     def get_total_price(self, cart):
         return sum([item.quantity * item.product.price for item in cart.items.all()])
 
-        # e9e38a07-5aa0-4a07-bea7-739a9e38ba4a
+        # ff332a86-c70a-487a-9450-4f92fff8c167

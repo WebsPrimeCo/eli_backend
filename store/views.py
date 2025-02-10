@@ -39,9 +39,19 @@ class CommentViewSet(ModelViewSet):
             'product_pk': self.kwargs['product_pk'],
                 }
     
-class CartViewSet(mixins.CreateModelMixin,
-                   mixins.RetrieveModelMixin,
-                   mixins.DestroyModelMixin,
-                   GenericViewSet):
-    serializer_class= serializers.CartSerializer
-    queryset = models.Cart.objects.all()
+
+class CartViewSet(ModelViewSet):
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_queryset(self):
+        cart_pk = self.kwargs['cart_pk']
+        return models.CartItem.objects.select_related('product').filter(cart_id=cart_pk).all()
+    
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return serializers.AddCartItemSerializer
+        elif self.request.method == 'PATCH':
+            return serializers.UpdateCartItemSerializer
+
+    def get_serializer_context(self):
+        return {'cart_pk': self.kwargs['cart_pk']}  
